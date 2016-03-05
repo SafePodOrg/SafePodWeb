@@ -61,5 +61,9 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
+#Eclipse files
+.project
+.pydevproject
+
 keys.json
 *.sqlite3
