@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
 
-from .views import PostListView, SearchView, AllTagsView, TaggedPostListView, forum_post, PostDetailView, forum_comment, CommentDetailView
+from .views import PostListView, SearchView, AllTagsView, TaggedPostListView, MyPostListView, forum_post, PostDetailView, forum_comment, CommentDetailView
  
 urlpatterns = [
                        url(r'^$', PostListView.as_view(), name='posts_index'),
@@ -11,6 +11,7 @@ urlpatterns = [
                        url(r'^tag/(?P<slug>[a-zA-Z0-9-]+)/?$', TaggedPostListView.as_view(), name='tagged_posts'),
                        # url to handle new post
                        url(r'^post/new/?$', forum_post, name='new_post'),
+                       url(r'^post/my/?$', MyPostListView.as_view(), name='my_post'),
                        # detailed view of a particular post
                        url(r'^post/(?P<pk>[0-9]+)/?$', PostDetailView.as_view(), name='post_detail'),
                        

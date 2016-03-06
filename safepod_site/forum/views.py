@@ -10,6 +10,8 @@ from django.utils.html import escape
 
 from .models import Post, Tag, Comment, AppUser
 
+from safepod_site.settings.base import get_secret_key
+
 # Process the input query string to make sure only legitimate words are used.
 def process_query_string(query_string):
     """Query sanitizer"""
@@ -18,6 +20,17 @@ def process_query_string(query_string):
     tokens = [word for word in query_string.split() if word.lower() not in stopwords]
     # Use only the first 10 words to avoid using long string searches
     return tokens[:10]
+
+def check_signature(request):
+    if request.method == 'GET' and 'sign' in request.GET and request.GET.get('sign','') == get_secret_key("APP_ID"):
+        return True
+    else:
+        return False
+    
+    if request.method == 'POST' and request.body.has_key('sign') and request.body['sign'] == get_secret_key("APP_ID"):
+        return True
+    else:
+        return False
 
 # This function converts a give post obj queryset into a standard json response object used by postlistview, searchview and tagview
 def post_objs_to_json(queryset):
@@ -42,10 +55,23 @@ class PostListView(generic.ListView):
     model = Post
     
     def render_to_response(self, context, **response_kwargs):  
-        
-        queryset = Post.objects.all()[:10]  
-        return post_objs_to_json(queryset)
+        if check_signature(self.request):
+            queryset = Post.objects.all()[:10]  
+            return post_objs_to_json(queryset)
+        else:
+            return JsonResponse({'success':False}, status=400)
+
+class MyPostListView(generic.ListView):
     
+    model = Post
+    
+    def render_to_response(self, context, **response_kwargs):  
+        if check_signature(self.request):
+            queryset = Post.objects.filter(app_user__id=self.request.body['userid']) 
+            return post_objs_to_json(queryset)
+        else:
+            return JsonResponse({'success':False}, status=400)
+
 class SearchView(generic.ListView):
 
     def get_queryset(self):
@@ -71,27 +97,35 @@ class SearchView(generic.ListView):
     
     # Render the results
     def render_to_response(self, context, **response_kwargs):  
+        if check_signature(self.request):
+            queryset = self.get_queryset()   
+            return post_objs_to_json(queryset)
+        else:
+            return JsonResponse({'success':False}, status=400)
         
-        queryset = self.get_queryset()   
-        return post_objs_to_json(queryset)
-
+        
 class AllTagsView(generic.ListView):
     
     model = Tag
     
     def render_to_response(self, context, **response_kwargs):    
-        queryset = Tag.objects.all()
-        results = []
-        for item in queryset:
-            result_obj = {}
-            result_obj['tag'] = item.name
-            result_obj['slug'] = item.slug
-            result_obj['description'] = item.description
-            results.append(result_obj)
-            
-        return JsonResponse({ 
-                                'results': results
-                            }, status=200)        
+        if check_signature(self.request):
+            queryset = Tag.objects.all()
+            results = []
+            for item in queryset:
+                result_obj = {}
+                result_obj['tag'] = item.name
+                result_obj['slug'] = item.slug
+                result_obj['description'] = item.description
+                results.append(result_obj)
+                
+            return JsonResponse({ 
+                                    'results': results
+                                }, status=200)   
+        
+        else:
+            return JsonResponse({'success':False}, status=400)
+             
         
 class TaggedPostListView(generic.ListView):
     
@@ -108,12 +142,18 @@ class TaggedPostListView(generic.ListView):
             raise Http404   
     
     # Render the results
-    def render_to_response(self, context, **response_kwargs):  
-        queryset = self.get_queryset()   
-        return post_objs_to_json(queryset)
-
+    def render_to_response(self, context, **response_kwargs): 
+        if check_signature(self.request): 
+            queryset = self.get_queryset()   
+            return post_objs_to_json(queryset)
+        else:
+            return JsonResponse({'success':False}, status=400)
+        
 @csrf_exempt
 def forum_post(request):
+    if not check_signature(request):   
+        return JsonResponse({'success':False}, status=400) 
+
     # If the request is a post, get the form contents and initialize an instance of the form object
     if request.method == "POST":
         post_obj = json.loads(request.body)
@@ -144,7 +184,10 @@ class PostDetailView(generic.DetailView):
     
     model = Post 
     
-    def render_to_response(self, context, **response_kwargs):      
+    def render_to_response(self, context, **response_kwargs):   
+        if not check_signature(self.request):   
+            return JsonResponse({'success':False}, status=400)
+        
         postobj = self.get_object()
         
         results = {'body': postobj.body,
@@ -204,6 +247,10 @@ class PostDetailView(generic.DetailView):
 
    
     def post(self, request, *args, **kwargs):
+        
+        if not check_signature(self.request):   
+            return JsonResponse({'success':False}, status=400)
+        
         postobj = self.get_object()
         
         vote = json.loads(request.body)
@@ -261,6 +308,10 @@ class PostDetailView(generic.DetailView):
    
 @csrf_exempt
 def forum_comment(request):
+
+    if not check_signature(request):   
+        return JsonResponse({'success':False}, status=400)
+
     # If the request is a post, get the form contents and initialize an instance of the form object
     if request.method == "POST":
         comment_obj = json.loads(request.body)
@@ -287,7 +338,11 @@ class CommentDetailView(generic.DetailView):
     
     model = Comment 
     
-    def render_to_response(self, context, **response_kwargs):      
+    def render_to_response(self, context, **response_kwargs):
+           
+        if not check_signature(self.request):   
+            return JsonResponse({'success':False}, status=400)   
+        
         commentobj = self.get_object()
         
         results = {'body': commentobj.body,
@@ -317,6 +372,10 @@ class CommentDetailView(generic.DetailView):
 
    
     def post(self, request, *args, **kwargs):
+        
+        if not check_signature(self.request):   
+            return JsonResponse({'success':False}, status=400) 
+        
         commentobj = self.get_object()
         
         vote = json.loads(request.body)
