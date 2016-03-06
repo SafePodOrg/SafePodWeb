@@ -24,7 +24,7 @@ h4,
 h5,
 h6 {
     margin: 0 0 35px;
-    font-family: Armata,Montserrat,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: Quicksand,Montserrat,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-weight: 700;
     letter-spacing: 1px;
 }
@@ -148,7 +148,7 @@ a:focus {
     color: #fff;
     
     background: no-repeat bottom center scroll;
-    background-image: url('../img/bg4.jpg');
+    background-image: url('../img/bg3.jpg');
     background-color: #000;
     -webkit-background-size: cover;
     -moz-background-size: cover;
