@@ -114,23 +114,30 @@ class TaggedPostListView(generic.ListView):
 @csrf_exempt
 def forum_post(request):
     # If the request is a post, get the form contents and initialize an instance of the form object
+    print request
     if request.method == "POST":
+        print request.body
         post_obj = json.loads(request.body)
+        print post_obj
         try:
+            print "Inside try block"
             new_post = Post()
             new_post.body = post_obj['body']
-
+            print "Created new post and appended the body"
             try:
                 obj = AppUser.objects.get(id=post_obj['userid'])
+                print "Retrieved app user"
             except AppUser.DoesNotExist:
                 obj = AppUser(id=post_obj['userid'])
                 obj.save()
+                print "Created new app user "
             new_post.app_user = obj
             new_post.save() 
+            print "Saved new post"
             for tag_name in post_obj['tags']:
                 tag = Tag.objects.get(slug=tag_name)
                 new_post.tags.add(tag)
-
+            print "Iterated over all the tags"
             return JsonResponse({'success':True}, status=200)
         except:
             # Failed!
