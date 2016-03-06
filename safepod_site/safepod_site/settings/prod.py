@@ -8,7 +8,7 @@ TEMPLATE_DEBUG = False
 DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-                'NAME': 'safepod',
+                'NAME': 'safepodapp',
                 'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
                 'PORT': '5432',
                 'USER': get_secret_key("DB_USERNAME"),
