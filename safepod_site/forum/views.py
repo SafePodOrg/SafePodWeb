@@ -26,6 +26,7 @@ def post_objs_to_json(queryset):
     for item in queryset:
         result_obj = {}
         result_obj['body'] = escape(item.body)[:100]
+        result_obj['id'] = item.pk
         result_obj['tags'] = []
         for tag in item.tags.all():
             result_obj['tags'].append(tag.name)
@@ -114,30 +115,23 @@ class TaggedPostListView(generic.ListView):
 @csrf_exempt
 def forum_post(request):
     # If the request is a post, get the form contents and initialize an instance of the form object
-    print request
     if request.method == "POST":
-        print request.body
         post_obj = json.loads(request.body)
-        print post_obj
         try:
-            print "Inside try block"
             new_post = Post()
             new_post.body = post_obj['body']
-            print "Created new post and appended the body"
+            
             try:
                 obj = AppUser.objects.get(id=post_obj['userid'])
-                print "Retrieved app user"
             except AppUser.DoesNotExist:
                 obj = AppUser(id=post_obj['userid'])
                 obj.save()
-                print "Created new app user "
             new_post.app_user = obj
             new_post.save() 
-            print "Saved new post"
             for tag_name in post_obj['tags']:
                 tag = Tag.objects.get(slug=tag_name)
                 new_post.tags.add(tag)
-            print "Iterated over all the tags"
+
             return JsonResponse({'success':True}, status=200)
         except:
             # Failed!
@@ -154,6 +148,7 @@ class PostDetailView(generic.DetailView):
         postobj = self.get_object()
         
         results = {'body': postobj.body,
+                   'id': postobj.pk,
                    'created': postobj.created,
                    'likes': postobj.likes,
                    'dislikes':postobj.dislikes,   
@@ -182,6 +177,7 @@ class PostDetailView(generic.DetailView):
         results['comments'] = []
         for item in postobj.comment_set.all():
             result_obj = { 'body': item.body,
+                           'id': item.pk,
                            'created': item.created,
                            'likes': item.likes,
                            'dislikes':item.dislikes,   
@@ -295,6 +291,7 @@ class CommentDetailView(generic.DetailView):
         commentobj = self.get_object()
         
         results = {'body': commentobj.body,
+                   'id': commentobj.pk,
                    'created': commentobj.created,
                    'likes': commentobj.likes,
                    'dislikes':commentobj.dislikes,   
