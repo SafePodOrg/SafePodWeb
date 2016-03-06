@@ -26,7 +26,7 @@ def post_objs_to_json(queryset):
     for item in queryset:
         result_obj = {}
         result_obj['body'] = escape(item.body)[:100]
-        result_obj['id'] = item.pk
+        result_obj['id'] = str(item.pk)
         result_obj['tags'] = []
         for tag in item.tags.all():
             result_obj['tags'].append(tag.name)
@@ -148,10 +148,10 @@ class PostDetailView(generic.DetailView):
         postobj = self.get_object()
         
         results = {'body': postobj.body,
-                   'id': postobj.pk,
+                   'id': str(postobj.pk),
                    'created': postobj.created,
-                   'likes': postobj.likes,
-                   'dislikes':postobj.dislikes,   
+                   'likes': str(postobj.likes),
+                   'dislikes':str(postobj.dislikes),   
                    'posted': False,  
                    'liked': False, 
                    'disliked': False,               
@@ -177,10 +177,10 @@ class PostDetailView(generic.DetailView):
         results['comments'] = []
         for item in postobj.comment_set.all():
             result_obj = { 'body': item.body,
-                           'id': item.pk,
-                           'created': item.created,
-                           'likes': item.likes,
-                           'dislikes':item.dislikes,   
+                           'id': str(item.pk),
+                           'created': str(item.created),
+                           'likes': str(item.likes),
+                           'dislikes':str(item.dislikes),   
                            'posted': False,  
                            'liked': False, 
                            'disliked': False,               
@@ -291,10 +291,10 @@ class CommentDetailView(generic.DetailView):
         commentobj = self.get_object()
         
         results = {'body': commentobj.body,
-                   'id': commentobj.pk,
+                   'id': str(commentobj.pk),
                    'created': commentobj.created,
-                   'likes': commentobj.likes,
-                   'dislikes':commentobj.dislikes,   
+                   'likes': str(commentobj.likes),
+                   'dislikes':str(commentobj.dislikes),   
                    'posted': False,  
                    'liked': False, 
                    'disliked': False,               
