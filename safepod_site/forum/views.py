@@ -254,16 +254,15 @@ class PostDetailView(generic.DetailView):
 def forum_comment(request):
     # If the request is a post, get the form contents and initialize an instance of the form object
     if request.method == "POST":
-        post_obj = json.loads(request.body)
+        comment_obj = json.loads(request.body)
             
         try:
-            new_post = Comment()
-            new_post.body = post_obj['body']
-            new_post.app_user = AppUser.objects.get_or_create(id=post_obj['userid'])
-            new_post.save() 
-            for tag_name in post_obj['tags']:
-                tag = Tag.objects.get(slug=tag_name)
-                new_post.tags.add(tag)
+            new_comment = Comment()
+            new_comment.body = comment_obj['body']
+            new_comment.app_user = AppUser.objects.get_or_create(id=comment_obj['userid'])
+            new_comment.comment = Post.objects.get(comment_obj['post'])
+            new_comment.save() 
+            
             return JsonResponse({'success':True}, status=200)
         except:
             # Failed!
