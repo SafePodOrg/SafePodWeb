@@ -22,19 +22,15 @@ def process_query_string(query_string):
     return tokens[:10]
 
 def check_signature(request):
-    return True
     if request.method == 'GET' and 'sign' in request.GET and request.GET.get('sign','') == get_secret_key("APP_ID"):
-        print request.method
-        print request.GET.get('sign','')
-        print get_secret_key("APP_ID")
         return True
     else:
-        return True
+        return False
     
     if request.method == 'POST' and request.body.has_key('sign') and request.body['sign'] == get_secret_key("APP_ID"):
         return True
     else:
-        return True
+        return False
 
 # This function converts a give post obj queryset into a standard json response object used by postlistview, searchview and tagview
 def post_objs_to_json(queryset):
